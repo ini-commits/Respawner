@@ -27,18 +27,20 @@ client.on(Events.MessageCreate, (message) => {
 
     // --- TEMPORARY TEST TRIGGER ---
     if (message.content === '!test-join') {
+        // manually trigger the guildMemberAdd event using the person who typed the command
         client.emit('guildMemberAdd', message.member);
         message.reply('Simulated a new member join for you! Check your roles.');
     }
 });
 
-// auto role assign when someone joins
+// auto role assign when someone joins using Role ID
 client.on(Events.GuildMemberAdd, async (member) => {
     try {
-        const role = member.guild.roles.cache.find((r) => r.name === 'Member');
+        const roleId = '1529103788231626812';
+        const role = member.guild.roles.cache.get(roleId);
 
         if (!role) {
-            console.log('Role "Member" not found in this server.');
+            console.log(`Role with ID ${roleId} not found in this server.`);
             return;
         }
 
