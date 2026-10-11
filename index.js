@@ -1,3 +1,6 @@
+// https://nodejs.org/docs/latest/api/documentation.html
+// https://discordjs.guide/legacy
+
 import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
