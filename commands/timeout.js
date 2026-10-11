@@ -42,7 +42,7 @@ export default {
             await target.timeout(durationMs, reason);
 
             const embed = new EmbedBuilder()
-                .setTitle(`User has been timed out for ${durationMs}`)
+                .setTitle(`User has been timed out for ${minutes} minute(s)`)
                 .setColor(0xFEE75C)
                 .addFields(
                     { name: 'User', value: `${target.user.tag}`, inline: true },
