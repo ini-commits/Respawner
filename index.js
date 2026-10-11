@@ -1,5 +1,20 @@
-// https://nodejs.org/docs/latest/api/documentation.html
-// https://discordjs.guide/legacy
+/**
+ * Bot Architecture: Modular / Dynamic Command Loader
+ * --------------------------------------------------
+ * This file (index.js) acts as the controller. Instead of writing
+ * every command in this file, it uses Node.js file system utilities (fs) and ESM path
+ * resolution (__dirname) to automatically scan, import, and register any
+ * .js file placed inside the 'commands/' directory.
+ * We don't need to edit this file to add new commands.
+ */
+
+/**
+ * Documentation to refer to
+ * -----------------------------------------------------
+ * https://nodejs.org/docs/latest/api/documentation.html - Node.js
+ * https://discordjs.guide/legacy - Discord.js
+ * https://gemini.google.com - Google Gemini to help debug
+ */
 
 import 'dotenv/config';
 import fs from 'node:fs';
