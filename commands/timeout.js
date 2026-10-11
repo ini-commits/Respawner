@@ -17,7 +17,7 @@ export default {
         .addStringOption(option =>
             option.setName('reason')
                 .setDescription('The reason for the timeout')
-                .setRequired(true))
+                .setRequired(false))
 
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers), // only people with mod perms
 
@@ -36,5 +36,26 @@ export default {
                 ephemeral: true
             });
         }
-    }
+
+        try {
+            const durationMs = minutes * 60 * 1000;
+            await target.timeout(durationMs, reason);
+
+            const embed = new EmbedBuilder()
+                .setTitle(`User has been timed out for ${durationMs}`)
+                .setColor(0xFEE75C)
+                .addFields(
+                    { name: 'User', value: `${target.user.tag}`, inline: true },
+                    { name: 'Duration', value: `${minutes} minute(s)`, inline: true },
+                    { name: 'Reason', value: reason, inline: false }
+                )
+                .setFooter({ text: `Action by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [embed] });
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'There was an error trying to timeout this user.', ephemeral: true });
+        }
+    },
 };
