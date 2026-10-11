@@ -17,7 +17,24 @@ export default {
         .addStringOption(option =>
             option.setName('reason')
                 .setDescription('The reason for the timeout')
-                .setRequired(false))
+                .setRequired(true))
 
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers), // only people with mod perms
+
+    async execute(interaction) {
+        const target = interaction.options.getMember('target');
+        const minutes = interaction.options.getInteger('duration');
+        const reason = interaction.options.getString('reason') ?? 'No reason provided';
+
+        if (!target) {
+            return interaction.reply({content: 'That user is not in this server.', ephemeral: true});
+        }
+
+        if (!target.moderatable) {
+            return interaction.reply({
+                content: 'I can\'t timeout this user. They may have a higher role than me.',
+                ephemeral: true
+            });
+        }
+    }
 };
