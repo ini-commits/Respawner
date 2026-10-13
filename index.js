@@ -20,7 +20,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
+import { Client, Collection, Events, GatewayIntentBits, REST, Routes, ActivityType } from 'discord.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -43,6 +43,14 @@ for (const file of commandFiles) {
 // when online, register commands with discord
 client.once(Events.ClientReady, async (readyClient) => {
     console.log(`Respawner is online! Logged in as ${readyClient.user.tag}`);
+
+    readyClient.user.setPresence({
+        activities: [{
+            name: 'Respawn Sync on https://respawnsync.com',
+            type: ActivityType.Listening,
+        }],
+        status: 'dnd',
+    });
 
     const commandsData = client.commands.map(cmd => cmd.data.toJSON());
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
