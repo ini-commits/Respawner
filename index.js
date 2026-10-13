@@ -46,7 +46,7 @@ client.once(Events.ClientReady, async (readyClient) => {
 
     readyClient.user.setPresence({
         activities: [{
-            name: 'to Respawn Sync on https://respawnsync.com',
+            name: 'Respawn Sync on https://respawnsync.com',
             type: ActivityType.Listening,
         }],
         status: 'dnd',
