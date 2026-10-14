@@ -30,5 +30,23 @@ export default {
             });
         }
 
+        try {
+            await target.kick(reason);
+
+            const embed = new EmbedBuilder()
+                .setTitle('User has been kicked from the server')
+                .setColor(0xFEE75C)
+                .addFields(
+                    { name: 'User', value: `${target.user.tag}`, inline: true },
+                    { name: 'Reason', value: reason, inline: false }
+                )
+                .setFooter({ text: `Action by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [embed] });
+        } catch (error) {
+            console.log(error);
+            await interaction.reply({ content: 'There was an error trying to kick this user', ephemeral: true });
+        }
     }
 }
