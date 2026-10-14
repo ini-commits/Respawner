@@ -48,9 +48,7 @@ client.once(Events.ClientReady, async (readyClient) => {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
     try {
-        await rest.put(Routes.applicationCommands(readyClient.user.id), { body: [] });
-        console.log('Successfully cleared old global commands.');
-
+        // register commands instantly to your specific test server
         await rest.put(
             Routes.applicationGuildCommands(readyClient.user.id, "1529097790062592040"),
             { body: commandsData }
