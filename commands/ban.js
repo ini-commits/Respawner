@@ -10,11 +10,11 @@ export default {
                 .setRequired(true))
         .addBooleanOption(option =>
             option.setName('permanent')
-                .setDescription('Set to true for a permanent ban (overrides duration)')
+                .setDescription('Set to true for a permanent ban')
                 .setRequired(false))
         .addIntegerOption(option =>
             option.setName('days')
-                .setDescription('Duration of the temp-ban in days (1 to 365)')
+                .setDescription('Duration of temp-ban in days (1 to 365)')
                 .setRequired(false)
                 .setMinValue(1)
                 .setMaxValue(365))
@@ -49,15 +49,17 @@ export default {
         }
 
         try {
-            await target.ban({ reason });
+            // ban target and delete 1 day of message history
+            await target.ban({ reason, deleteMessageSeconds: 86400 });
 
+            // corrected multiplication for temp-ban duration
             if (!isPermanent && days) {
                 const durationMs = days * 24 * 60 * 60 * 1000;
                 setTimeout(async () => {
                     try {
-                        await interaction.guild.bans.remove(target.id, 'Temporary ban duration expired');
+                        await interaction.guild.bans.remove(target.id, 'Temp-ban duration expired');
                     } catch (unbanError) {
-                        console.error(`Failed to automatically unban user ${target.id}:`, unbanError);
+                        console.error(`Failed to unban ${target.id}:`, unbanError);
                     }
                 }, durationMs);
             }
