@@ -13,7 +13,7 @@ export default {
                 .setDescription('The reason for the kick')
                 .setRequired(false))
 
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
 
     async execute(interaction) {
         const target = interaction.options.getMember('target');
@@ -23,7 +23,7 @@ export default {
             return interaction.reply({content: "That user is not in this server.", ephemeral: true});
         }
 
-        if (!target.moderatable) {
+        if (!target.kickable) {
             return interaction.reply({
                 content: "I can\'t kick this user. They may have a higher role than me",
                 ephemeral: true
