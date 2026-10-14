@@ -8,14 +8,6 @@
  * We don't need to edit this file to add new commands.
  */
 
-/**
- * Documentation to refer to
- * -----------------------------------------------------
- * https://nodejs.org/docs/latest/api/documentation.html - Node.js
- * https://discordjs.guide/legacy - Discord.js
- * https://gemini.google.com - Google Gemini to help debug
- */
-
 import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -60,7 +52,7 @@ client.once(Events.ClientReady, async (readyClient) => {
             Routes.applicationGuildCommands(readyClient.user.id, "1529097790062592040"),
             { body: commandsData }
         );
-        console.log('Successfully registered slash commands.');
+        console.log('Successfully registered guild slash commands.');
     } catch (error) {
         console.error('Failed to register commands:', error);
     }
