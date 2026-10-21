@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import db from '../database.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -19,7 +20,7 @@ export default {
         const reason = interaction.options.getString('reason') ?? 'No reason provided';
 
         try {
-            // check if the user is actually banned first
+            // check if user is actually banned
             const banInfo = await interaction.guild.bans.fetch(targetId).catch(() => null);
 
             if (!banInfo) {
@@ -29,8 +30,18 @@ export default {
                 });
             }
 
-            // remove the ban
             await interaction.guild.bans.remove(targetId, reason);
+
+            // save action to db
+            try {
+                const insertLog = db.prepare(`
+                    INSERT INTO mod_logs (guild_id, user_id, moderator_id, action, reason) 
+                    VALUES (?, ?, ?, ?, ?)
+                `);
+                insertLog.run(interaction.guild.id, targetId, interaction.user.id, 'UNBAN', reason);
+            } catch (dbError) {
+                console.error('Failed to save mod log to database:', dbError);
+            }
 
             const embed = new EmbedBuilder()
                 .setTitle('User Has Been Unbanned')
