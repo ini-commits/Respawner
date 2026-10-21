@@ -34,7 +34,7 @@ export default {
 
             const embed = new EmbedBuilder()
                 .setTitle('User Has Been Unbanned')
-                .setColor(0x57F287) // Discord Green
+                .setColor(0x57F287)
                 .addFields(
                     { name: 'User', value: `${banInfo.user.tag} (\`${banInfo.user.id}\`)`, inline: true },
                     { name: 'Reason', value: reason, inline: false }
