@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
-
+import db from '../database.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('timeout')
@@ -18,8 +18,7 @@ export default {
             option.setName('reason')
                 .setDescription('The reason for the timeout')
                 .setRequired(false))
-
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers), // only people with mod perms
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
 
     async execute(interaction) {
         const target = interaction.options.getMember('target');
@@ -27,19 +26,31 @@ export default {
         const reason = interaction.options.getString('reason') ?? 'No reason provided';
 
         if (!target) {
-            return interaction.reply({content: 'That user is not in this server.', ephemeral: true});
+            return interaction.reply({ content: 'That user is not in this server.', ephemeral: true });
         }
 
         if (!target.moderatable) {
             return interaction.reply({
-                content: 'I can\'t timeout this user. They may have a higher role than me.',
+                content: "I can't timeout this user. They may have a higher role than me.",
                 ephemeral: true
             });
         }
 
         try {
             const durationMs = minutes * 60 * 1000;
+
             await target.timeout(durationMs, reason);
+
+            // save action to db
+            try {
+                const insertLog = db.prepare(`
+                    INSERT INTO mod_logs (guild_id, user_id, moderator_id, action, reason) 
+                    VALUES (?, ?, ?, ?, ?)
+                `);
+                insertLog.run(interaction.guild.id, target.id, interaction.user.id, `TIMEOUT (${minutes}m)`, reason);
+            } catch (dbError) {
+                console.error('Failed to save mod log to database:', dbError);
+            }
 
             const embed = new EmbedBuilder()
                 .setTitle(`User has been timed out for ${minutes} minute(s)`)
