@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import db from '../database.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -12,7 +13,6 @@ export default {
             option.setName("reason")
                 .setDescription('The reason for the kick')
                 .setRequired(false))
-
         .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
 
     async execute(interaction) {
@@ -20,18 +20,29 @@ export default {
         const reason = interaction.options.getString('reason') ?? 'No reason provided';
 
         if (!target) {
-            return interaction.reply({content: "That user is not in this server.", ephemeral: true});
+            return interaction.reply({ content: "That user is not in this server.", ephemeral: true });
         }
 
         if (!target.kickable) {
             return interaction.reply({
-                content: "I can\'t kick this user. They may have a higher role than me",
+                content: "I can't kick this user. They may have a higher role than me",
                 ephemeral: true
             });
         }
 
         try {
             await target.kick(reason);
+
+            // save action to db
+            try {
+                const insertLog = db.prepare(`
+                    INSERT INTO mod_logs (guild_id, user_id, moderator_id, action, reason) 
+                    VALUES (?, ?, ?, ?, ?)
+                `);
+                insertLog.run(interaction.guild.id, target.id, interaction.user.id, 'KICK', reason);
+            } catch (dbError) {
+                console.error('Failed to save mod log to database:', dbError);
+            }
 
             const embed = new EmbedBuilder()
                 .setTitle('User has been kicked from the server')
@@ -49,4 +60,4 @@ export default {
             await interaction.reply({ content: 'There was an error trying to kick this user', ephemeral: true });
         }
     }
-}
+};
