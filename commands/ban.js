@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import db from '../database.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -49,10 +50,20 @@ export default {
         }
 
         try {
-            // ban target and delete 1 day of message history
             await target.ban({ reason, deleteMessageSeconds: 86400 });
 
-            // corrected multiplication for temp-ban duration
+            // save action to db
+            try {
+                const actionType = isPermanent ? 'BAN' : `TEMP-BAN (${days}d)`;
+                const insertLog = db.prepare(`
+                    INSERT INTO mod_logs (guild_id, user_id, moderator_id, action, reason) 
+                    VALUES (?, ?, ?, ?, ?)
+                `);
+                insertLog.run(interaction.guild.id, target.id, interaction.user.id, actionType, reason);
+            } catch (dbError) {
+                console.error('Failed to save mod log to database:', dbError);
+            }
+
             if (!isPermanent && days) {
                 const durationMs = days * 24 * 60 * 60 * 1000;
                 setTimeout(async () => {
