@@ -1,7 +1,7 @@
-const Database = require('better-sqlite3');
-const db = new Database('bot_database.db'); // new db file
+import Database from 'better-sqlite3';
 
-// a table for mod logs (bans, kicks, warnings, etc.)
+const db = new Database('bot_database.db');
+
 db.exec(`
     CREATE TABLE IF NOT EXISTS mod_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,6 +14,4 @@ db.exec(`
     )
 `);
 
-console.log('SQLite database connected and tables initialized.');
-
-module.exports = db;
+export default db;
