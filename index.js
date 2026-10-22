@@ -63,7 +63,7 @@ client.once(Events.ClientReady, async (readyClient) => {
 client.on(Events.InteractionCreate, async (interaction) => {
     // handing modal submissions
     if (interaction.isModalSubmit()) {
-        if (interaction.customId.startsWith('embed_create_')) {
+        if (interaction.customId.startsWith('embed_')) {
             const command = client.commands.get('embed');
             if (command && command.handleModal) {
                 await command.handleModal(interaction);
