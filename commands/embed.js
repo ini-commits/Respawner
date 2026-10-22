@@ -74,3 +74,18 @@ export default {
             await interaction.showModal(modal);
         }
 
+        // sending sub command
+        else if (subcommand === 'send') {
+            const name = interaction.options.getString('name');
+
+            const savedEmbed = db.prepare(`
+                SELECT * FROM custom_embeds WHERE guild_id = ? AND name = ?
+            `).get(interaction.guild.id, name);
+
+            if (!savedEmbed) {
+                return interaction.reply({
+                    content: `No saved embed found with the name **${name}**.`,
+                    ephemeral: true
+                });
+            }
+
