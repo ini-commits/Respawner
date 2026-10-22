@@ -1,11 +1,11 @@
 /**
- * Bot Architecture: Modular / Dynamic Command Loader
- * --------------------------------------------------
- * This file (index.js) acts as the controller. Instead of writing
- * every command in this file, it uses Node.js file system utilities (fs) and ESM path
- * resolution (__dirname) to automatically scan, import, and register any
- * .js file placed inside the 'commands/' directory.
- * We don't need to edit this file to add new commands.
+ - Bot Architecture: Modular / Dynamic Command Loader
+ - --------------------------------------------------
+ - This file (index.js) acts as the controller. Instead of writing
+ - every command in this file, it uses Node.js file system utilities (fs) and ESM path
+ - resolution (__dirname) to automatically scan, import, and register any
+ - .js file placed inside the 'commands/' directory.
+ - We don't need to edit this file to add new commands.
  */
 
 import 'dotenv/config';
@@ -48,7 +48,7 @@ client.once(Events.ClientReady, async (readyClient) => {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
     try {
-        // register commands instantly to your specific test server
+        // register commands instantly
         await rest.put(
             Routes.applicationGuildCommands(readyClient.user.id, "1529097790062592040"),
             { body: commandsData }
@@ -59,8 +59,19 @@ client.once(Events.ClientReady, async (readyClient) => {
     }
 });
 
-// handle slash commands
+// handle interactions (slash commands & modals)
 client.on(Events.InteractionCreate, async (interaction) => {
+    // handing modal submissions
+    if (interaction.isModalSubmit()) {
+        if (interaction.customId.startsWith('embed_create_')) {
+            const command = client.commands.get('embed');
+            if (command && command.handleModal) {
+                await command.handleModal(interaction);
+            }
+        }
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
