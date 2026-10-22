@@ -89,3 +89,36 @@ export default {
                 });
             }
 
+            const embed = new EmbedBuilder()
+                .setDescription(savedEmbed.description);
+
+            if (savedEmbed.title) embed.setTitle(savedEmbed.title);
+            if (savedEmbed.color) embed.setColor(savedEmbed.color);
+            if (savedEmbed.author) embed.setAuthor({ name: savedEmbed.author });
+            embed.setTimestamp();
+
+            await interaction.channel.send({ embeds: [embed] });
+            await interaction.reply({ content: `Successfully sent embed **${name}**!`, ephemeral: true });
+        }
+
+        // listing sub command
+        else if (subcommand === 'list') {
+            const embeds = db.prepare(`
+                SELECT name FROM custom_embeds WHERE guild_id = ?
+            `).all(interaction.guild.id);
+
+            if (embeds.length === 0) {
+                return interaction.reply({ content: 'There are no saved embeds in this server yet.', ephemeral: true });
+            }
+
+            const listString = embeds.map(e => `• \`${e.name}\``).join('\n');
+
+            const listEmbed = new EmbedBuilder()
+                .setTitle('Saved Server Embeds')
+                .setDescription(listString)
+                .setColor(0x0099ff);
+
+            await interaction.reply({ embeds: [listEmbed], ephemeral: true });
+        }
+    }
+
