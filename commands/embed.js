@@ -39,3 +39,38 @@ export default {
                 .setCustomId(`embed_create_${name}`)
                 .setTitle(`Configure Embed: ${name}`);
 
+            const titleInput = new TextInputBuilder()
+                .setCustomId('embed_title')
+                .setLabel('Embed Title')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false);
+
+            const descInput = new TextInputBuilder()
+                .setCustomId('embed_description')
+                .setLabel('Description (supports Discord markdown)')
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true);
+
+            const colorInput = new TextInputBuilder()
+                .setCustomId('embed_color')
+                .setLabel('Hex Color (e.g. #ffffff)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('#0099ff')
+                .setRequired(false);
+
+            const authorInput = new TextInputBuilder()
+                .setCustomId('embed_author')
+                .setLabel('Author Name')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(titleInput),
+                new ActionRowBuilder().addComponents(descInput),
+                new ActionRowBuilder().addComponents(colorInput),
+                new ActionRowBuilder().addComponents(authorInput)
+            );
+
+            await interaction.showModal(modal);
+        }
+
