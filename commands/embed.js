@@ -120,5 +120,47 @@ export default {
 
             await interaction.reply({ embeds: [listEmbed], ephemeral: true });
         }
-    }
+    },
 
+    // Handles the modal submit action when saved
+    async handleModal(interaction) {
+        if (!interaction.customId.startsWith('embed_create_')) return;
+
+        const name = interaction.customId.replace('embed_create_', '');
+        const title = interaction.fields.getTextInputValue('embed_title') || null;
+        const description = interaction.fields.getTextInputValue('embed_description');
+        const colorInput = interaction.fields.getTextInputValue('embed_color') || '#0099ff';
+        const author = interaction.fields.getTextInputValue('embed_author') || null;
+
+        let color = 0x0099ff;
+        try {
+            color = parseInt(colorInput.replace('#', ''), 16);
+        } catch {
+            color = 0x0099ff;
+        }
+
+        try {
+            const stmt = db.prepare(`
+                INSERT INTO custom_embeds (guild_id, name, title, description, color, author)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(guild_id, name) DO UPDATE SET
+                    title = excluded.title,
+                    description = excluded.description,
+                    color = excluded.color,
+                    author = excluded.author
+            `);
+            stmt.run(interaction.guild.id, name, title, description, color, author);
+
+            await interaction.reply({
+                content: `Successfully saved embed template **${name}**! Use \`/embed send name:${name}\` to post it.`,
+                ephemeral: true
+            });
+        } catch (dbError) {
+            console.error('Failed to save embed to database:', dbError);
+            await interaction.reply({
+                content: 'Failed to save the embed to the database.',
+                ephemeral: true
+            });
+        }
+    }
+};
