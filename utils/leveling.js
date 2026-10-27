@@ -1,19 +1,7 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import db from '../database.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const levelsFile = path.join(__dirname, '../levels.json');
+// Cooldown tracker to prevent XP spam (1 minute per user)
 const cooldowns = new Set();
-
-function getLevelsData() {
-    if (!fs.existsSync(levelsFile)) fs.writeFileSync(levelsFile, JSON.stringify({}));
-    return JSON.parse(fs.readFileSync(levelsFile, 'utf8'));
-}
-
-function saveLevelsData(data) {
-    fs.writeFileSync(levelsFile, JSON.stringify(data, null, 2));
-}
 
 export async function handleLeveling(message) {
     if (message.author.bot || !message.guild) return;
@@ -26,21 +14,33 @@ export async function handleLeveling(message) {
     cooldowns.add(cooldownKey);
     setTimeout(() => cooldowns.delete(cooldownKey), 60000);
 
-    const data = getLevelsData();
-    if (!data[guildId]) data[guildId] = {};
-    if (!data[guildId][userId]) data[guildId][userId] = { xp: 0, level: 0 };
+    // 1. Get or create user record in SQLite
+    let userRow = db.prepare(`
+        SELECT xp, level FROM user_levels WHERE guild_id = ? AND user_id = ?
+    `).get(guildId, userId);
 
-    const xpToAdd = Math.floor(Math.random() * 11) + 15;
-    data[guildId][userId].xp += xpToAdd;
-
-    const current = data[guildId][userId];
-    const requiredXp = (current.level + 1) * 100;
-
-    if (current.xp >= requiredXp) {
-        current.level += 1;
-        current.xp -= requiredXp;
-        message.channel.send(`🎉 Congratulations ${message.author}, you leveled up to **Level ${current.level}**!`);
+    if (!userRow) {
+        db.prepare(`
+            INSERT INTO user_levels (guild_id, user_id, xp, level) VALUES (?, ?, 0, 0)
+        `).run(guildId, userId);
+        userRow = { xp: 0, level: 0 };
     }
 
-    saveLevelsData(data);
+    // 2. Add random XP (15 to 25)
+    const xpToAdd = Math.floor(Math.random() * 11) + 15;
+    let newXp = userRow.xp + xpToAdd;
+    let newLevel = userRow.level;
+    const requiredXp = (newLevel + 1) * 100;
+
+    // 3. Check for level up
+    if (newXp >= requiredXp) {
+        newLevel += 1;
+        newXp -= requiredXp; // Carry over remaining XP
+        message.channel.send(`🎉 Congratulations ${message.author}, you leveled up to **Level ${newLevel}**!`);
+    }
+
+    // 4. Save updated XP and level back to SQLite
+    db.prepare(`
+        UPDATE user_levels SET xp = ?, level = ? WHERE guild_id = ? AND user_id = ?
+    `).run(newXp, newLevel, guildId, userId);
 }
