@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Client, Collection, Events, GatewayIntentBits, REST, Routes, ActivityType } from 'discord.js';
+import { handleLeveling } from './utils/leveling.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -20,6 +21,8 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
     ],
 });
 
@@ -101,6 +104,10 @@ client.on(Events.GuildMemberAdd, async (member) => {
     } catch (error) {
         console.error('Failed to assign role:', error);
     }
+});
+
+client.on(Events.MessageCreate, async (message) => {
+    await handleLeveling(message);
 });
 
 client.login(process.env.DISCORD_TOKEN);
